@@ -21,17 +21,12 @@ def send_mail(to: str) -> str:
     return to
 
 
-def test_catalog_reports_deferred_and_approval_tools(test_agents: None) -> None:
-    agent = BaseAgent[str](name="test", skills=[], toolsets=[feature_tools])
-    tools = {tool.name: tool for tool in agent.tool_catalog}
-    assert (tools["find_archive"].label, tools["find_archive"].deferred) == ("Archive", True)
-    assert (tools["send_mail"].label, tools["send_mail"].requires_approval) == ("Mailer", True)
-
-
 async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent(
     test_agents: None,
 ) -> None:
-    agent = BaseAgent[str](name="test", skills=[], toolsets=[feature_tools])
+    agent = BaseAgent[AgentDeps, str](
+        deps_type=AgentDeps, name="test", skills=[], toolsets=[feature_tools]
+    )
     seen: list[AgentInfo] = []
 
     def model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
@@ -48,8 +43,12 @@ async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent(
 
 
 async def test_approval_tool_ends_the_run_with_a_deferred_request(test_agents: None) -> None:
-    agent = BaseAgent[str | DeferredToolRequests](
-        name="test", skills=[], toolsets=[feature_tools], output_type=[str, DeferredToolRequests]
+    agent = BaseAgent[AgentDeps, str | DeferredToolRequests](
+        deps_type=AgentDeps,
+        name="test",
+        skills=[],
+        toolsets=[feature_tools],
+        output_type=[str, DeferredToolRequests],
     )
 
     def model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:

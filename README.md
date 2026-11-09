@@ -36,7 +36,7 @@ Both read the root `.env`. Open <http://localhost:8000/docs> for interactive API
 ## Agent configuration
 
 - **Agents:** Each agent is a module in [agents/src/app/agents](agents/src/app/agents) that builds a `BaseAgent` with its `name`, `description`, and `instructions`, as [assistant.py](agents/src/app/agents/assistant.py) does. Its `name` is the agent ID. Register it in [agents/src/app/agents/__init__.py](agents/src/app/agents/__init__.py).
-- **Web UI (optional):** `mise web-ui` serves Pydantic AI's chat UI for the assistant at http://127.0.0.1:8001, using the root `.env`. It is a separate app in [web_ui.py](agents/src/app/web_ui.py); delete that file and the `web-ui` task in `mise.toml` to remove it.
+- **Web UI (optional):** `mise web-ui` serves Pydantic AI's chat UI for the personal agent at http://127.0.0.1:8001, using the root `.env`. It is a separate app in [web_ui.py](agents/src/app/web_ui.py); delete that file and the `web-ui` task in `mise.toml` to remove it.
 - **Model:** `MODEL_PROVIDER` is `opencode` (default) or `ollama`, and `AGENT_MODEL` names the model; its default is in [config.py](agents/src/app/core/config.py). For Ollama, also set `OLLAMA_BASE_URL`.
 - **Limits:** each run stops after `AGENT_REQUEST_LIMIT` model requests (default 20) or `AGENT_TOTAL_TOKENS_LIMIT` tokens (default 200000), counting the summarize tool's own request.
 - **CORS:** `CORS_ORIGINS` lists the browser origins allowed to call the API, as a JSON list or comma-separated values.
@@ -48,8 +48,6 @@ Both read the root `.env`. Open <http://localhost:8000/docs> for interactive API
 | GET    | `/`                          | Redirect to the API docs at `/docs`      |
 | GET    | `/health`                    | Check process health                     |
 | POST   | `/agents/{agent_id}`         | Run an agent and stream Vercel AI chunks |
-| GET    | `/agents/{agent_id}/tools`   | List the agent's tool catalog            |
-| GET    | `/agents/{agent_id}/skills`  | List the skills the agent offers         |
 
 ## Tracing
 

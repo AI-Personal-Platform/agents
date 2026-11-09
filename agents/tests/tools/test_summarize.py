@@ -51,12 +51,14 @@ def fake_model() -> FakeModel:
 
 
 @pytest.fixture
-def agent(test_agents: None, fake_model: FakeModel) -> BaseAgent[assistant.AgentResponse]:
+def agent(
+    test_agents: None, fake_model: FakeModel
+) -> BaseAgent[AgentDeps, assistant.AgentResponse]:
     return assistant.get_assistant_agent()
 
 
 async def test_summary_returns_in_parent_run(
-    agent: BaseAgent[assistant.AgentResponse],
+    agent: BaseAgent[AgentDeps, assistant.AgentResponse],
     fake_model: FakeModel,
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)):
@@ -85,7 +87,7 @@ async def test_summary_returns_in_parent_run(
 
 
 async def test_parent_request_limit_counts_the_summarize_request(
-    agent: BaseAgent[assistant.AgentResponse], fake_model: FakeModel
+    agent: BaseAgent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)), pytest.raises(UsageLimitExceeded):
         await agent.run(
@@ -97,7 +99,7 @@ async def test_parent_request_limit_counts_the_summarize_request(
 
 
 async def test_concurrent_summaries_keep_their_own_session_headers(
-    agent: BaseAgent[assistant.AgentResponse], fake_model: FakeModel
+    agent: BaseAgent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)):
         first, second = await gather(
@@ -127,4 +129,3 @@ async def test_assistant_gets_the_summarizer_tool_and_spec_rules(test_agents: No
 
     assert [tool.name for tool in seen[0].function_tools] == ["summarize"]
     assert "Summarization requires the summarize tool" in (seen[0].instructions or "")
-    assert [tool.label for tool in agent.tool_catalog] == ["Summarizer"]

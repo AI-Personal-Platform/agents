@@ -10,14 +10,13 @@ from starlette.responses import Response
 
 from app.agents import find_agent
 from app.agents.base import AgentDeps, BaseAgent
-from app.agents.base.catalog import AgentSkill, AgentTool, catalog_from_skills
 from app.core.config import get_settings
 
 settings = get_settings()
 router = APIRouter()
 
 
-def get_agent(agent_id: str) -> BaseAgent[Any]:
+def get_agent(agent_id: str) -> BaseAgent[Any, Any]:
     agent = find_agent(agent_id)
     if agent is None:
         raise HTTPException(status_code=404, detail=f"Unknown agent: {agent_id}.")
@@ -32,25 +31,13 @@ def get_agent(agent_id: str) -> BaseAgent[Any]:
     return agent
 
 
-AgentDep = Annotated[BaseAgent[Any], Depends(get_agent)]
-
-
-@router.get("/agents/{agent_id}/tools")
-async def list_tools(agent: AgentDep) -> list[AgentTool]:
-    return agent.tool_catalog
-
-
-@router.get("/agents/{agent_id}/skills")
-async def list_skills(agent: AgentDep) -> list[AgentSkill]:
-    return await catalog_from_skills(agent.skills)
+AgentDep = Annotated[BaseAgent[Any, Any], Depends(get_agent)]
 
 
 @router.post("/agents/{agent_id}")
 async def run_agent(agent: AgentDep, request: Request) -> Response:
     try:
-        adapter = await VercelAIAdapter[AgentDeps, Any].from_request(
-            request, agent=agent, sdk_version=6
-        )
+        adapter = await VercelAIAdapter[Any, Any].from_request(request, agent=agent, sdk_version=6)
     except ValidationError as error:
         return Response(
             error.json(include_input=False), status_code=422, media_type="application/json"
