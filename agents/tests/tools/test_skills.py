@@ -44,7 +44,7 @@ async def test_skill_is_listed_then_loaded_on_demand(skill_library: Path) -> Non
         return ModelResponse(parts=[TextPart("ok")])
 
     with agent.override(model=FunctionModel(model)):
-        result = await agent.run("Write release notes", deps=AgentDeps(chat_id="t"))
+        result = await agent.run("Write release notes", deps=AgentDeps(conversation_id="t"))
 
     assert "release-notes: Write release notes." in (seen[0].instructions or "")
     loaded = [
@@ -59,7 +59,7 @@ async def test_shipped_skill_library_loads() -> None:
     agent, _ = skills_agent(AGENTS_DIR)
 
     with agent.override(model=FunctionModel(lambda *_: ModelResponse(parts=[TextPart("ok")]))):
-        result = await agent.run("Hi", deps=AgentDeps(chat_id="t"))
+        result = await agent.run("Hi", deps=AgentDeps(conversation_id="t"))
 
     assert result.output == "ok"
 
@@ -78,7 +78,7 @@ async def test_agent_offers_only_its_listed_skills(skill_library: Path) -> None:
     none, _ = skills_agent(skill_library, [])
     for agent in (listed, none):
         with agent.override(model=FunctionModel(model)):
-            await agent.run("Hi", deps=AgentDeps(chat_id="t"))
+            await agent.run("Hi", deps=AgentDeps(conversation_id="t"))
 
     assert "code-review: Review code." in seen[0]
     assert "release-notes" not in seen[0]

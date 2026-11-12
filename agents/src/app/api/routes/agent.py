@@ -43,10 +43,10 @@ async def run_agent(agent: AgentDep, request: Request) -> Response:
         return Response(
             error.json(include_input=False), status_code=422, media_type="application/json"
         )
-    chat_id = adapter.run_input.id
-    if not chat_id:
+    conversation_id = adapter.run_input.id
+    if not conversation_id:
         raise HTTPException(status_code=422, detail="id must not be empty.")
 
-    deps = AgentDeps(chat_id=chat_id)
+    deps = AgentDeps(conversation_id=conversation_id)
     stream = adapter.run_stream(deps=deps, usage_limits=settings.usage_limits)
     return adapter.streaming_response(stream)

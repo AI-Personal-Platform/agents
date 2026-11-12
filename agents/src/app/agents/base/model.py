@@ -17,7 +17,7 @@ AGENTS_DIR = Path(__file__).resolve().parents[1]
 class AgentDeps:
     """Run dependencies shared with tools and forwarded to every subagent run."""
 
-    chat_id: str
+    conversation_id: str
 
 
 def agent_model_settings(ctx: RunContext[AgentDeps]) -> ModelSettings:
@@ -25,7 +25,7 @@ def agent_model_settings(ctx: RunContext[AgentDeps]) -> ModelSettings:
     return {
         "extra_headers": {
             "User-Agent": "ai-agent-platform/0.1.0",
-            "x-opencode-session": ctx.deps.chat_id,
+            "x-opencode-session": ctx.deps.conversation_id,
         }
     }
 

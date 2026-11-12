@@ -62,7 +62,7 @@ async def test_summary_returns_in_parent_run(
     with agent.override(model=FunctionModel(fake_model)):
         result = await agent.run(
             "Summarize the project description.",
-            deps=AgentDeps(chat_id="thread-1"),
+            deps=AgentDeps(conversation_id="thread-1"),
             usage_limits=UsageLimits(request_limit=3),
         )
 
@@ -90,7 +90,7 @@ async def test_parent_request_limit_counts_the_summarize_request(
     with agent.override(model=FunctionModel(fake_model)), pytest.raises(UsageLimitExceeded):
         await agent.run(
             "Summarize this.",
-            deps=AgentDeps(chat_id="thread-1"),
+            deps=AgentDeps(conversation_id="thread-1"),
             usage_limits=UsageLimits(request_limit=2),
         )
     assert len(fake_model.summaries) == 1
@@ -101,8 +101,8 @@ async def test_concurrent_summaries_keep_their_own_session_headers(
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)):
         first, second = await gather(
-            agent.run("Summarize this.", deps=AgentDeps(chat_id="thread-1")),
-            agent.run("Summarize this.", deps=AgentDeps(chat_id="thread-2")),
+            agent.run("Summarize this.", deps=AgentDeps(conversation_id="thread-1")),
+            agent.run("Summarize this.", deps=AgentDeps(conversation_id="thread-2")),
         )
     assert first.output.message == "Summary for thread-1"
     assert second.output.message == "Summary for thread-2"
@@ -123,7 +123,7 @@ async def test_assistant_gets_the_summarizer_tool_and_spec_rules(test_agents: No
 
     agent = assistant.get_assistant_agent()
     with agent.override(model=FunctionModel(model)):
-        await agent.run("Hi", deps=AgentDeps(chat_id="t"))
+        await agent.run("Hi", deps=AgentDeps(conversation_id="t"))
 
     assert [tool.name for tool in seen[0].function_tools] == ["summarize"]
     assert "Summarization requires the summarize tool" in (seen[0].instructions or "")

@@ -31,7 +31,7 @@ async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent() -> 
         return ModelResponse(parts=[TextPart("ok")])
 
     with agent.override(model=FunctionModel(model)):
-        await agent.run("Hi", deps=AgentDeps(chat_id="t"))
+        await agent.run("Hi", deps=AgentDeps(conversation_id="t"))
 
     names = {tool.name for tool in seen[0].function_tools}
     assert "find_archive" not in names
@@ -51,7 +51,7 @@ async def test_approval_tool_ends_the_run_with_a_deferred_request() -> None:
         return ModelResponse(parts=[ToolCallPart("send_mail", {"to": "a@b.c"})])
 
     with agent.override(model=FunctionModel(model)):
-        result = await agent.run("Mail a@b.c", deps=AgentDeps(chat_id="t"))
+        result = await agent.run("Mail a@b.c", deps=AgentDeps(conversation_id="t"))
 
     assert isinstance(result.output, DeferredToolRequests)
     assert [call.tool_name for call in result.output.approvals] == ["send_mail"]
