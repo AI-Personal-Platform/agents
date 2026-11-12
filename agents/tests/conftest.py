@@ -9,7 +9,6 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.ui.vercel_ai.request_types import SubmitMessage
 
 from app.agents import assistant, personal
-from app.agents.base import agent as base_agent
 from app.main import app
 from tests.helpers.agent_api import user_message
 
@@ -24,7 +23,8 @@ def run_input() -> SubmitMessage:
 @pytest.fixture
 def test_agents(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Build cached agents on TestModel; tests override the model they exercise."""
-    monkeypatch.setattr(base_agent, "get_agent_model", TestModel)
+    monkeypatch.setattr(assistant, "get_agent_model", TestModel)
+    monkeypatch.setattr(personal, "get_agent_model", TestModel)
     assistant.get_assistant_agent.cache_clear()
     personal.get_personal_agent.cache_clear()
     yield

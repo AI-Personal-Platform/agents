@@ -1,10 +1,11 @@
 """Tool metadata, deferred loading, toolset instructions, and approval, without a provider."""
 
-from pydantic_ai import DeferredToolRequests, FunctionToolset
+from pydantic_ai import Agent, DeferredToolRequests, FunctionToolset
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.test import TestModel
 
-from app.agents.base import AgentDeps, BaseAgent
+from app.agents.base import AgentDeps
 
 feature_tools = FunctionToolset[AgentDeps](instructions="Use the archive tools only for archives.")
 
@@ -21,12 +22,8 @@ def send_mail(to: str) -> str:
     return to
 
 
-async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent(
-    test_agents: None,
-) -> None:
-    agent = BaseAgent[AgentDeps, str](
-        deps_type=AgentDeps, name="test", skills=[], toolsets=[feature_tools]
-    )
+async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent() -> None:
+    agent = Agent(TestModel(), deps_type=AgentDeps, toolsets=[feature_tools])
     seen: list[AgentInfo] = []
 
     def model(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
@@ -42,11 +39,10 @@ async def test_deferred_tools_are_hidden_and_toolset_instructions_are_sent(
     assert "Use the archive tools only for archives." in (seen[0].instructions or "")
 
 
-async def test_approval_tool_ends_the_run_with_a_deferred_request(test_agents: None) -> None:
-    agent = BaseAgent[AgentDeps, str | DeferredToolRequests](
+async def test_approval_tool_ends_the_run_with_a_deferred_request() -> None:
+    agent = Agent(
+        TestModel(),
         deps_type=AgentDeps,
-        name="test",
-        skills=[],
         toolsets=[feature_tools],
         output_type=[str, DeferredToolRequests],
     )

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_ai import ModelSettings, RunContext
 from pydantic_ai.models import Model
@@ -8,6 +9,8 @@ from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from app.core.config import get_settings
+
+AGENTS_DIR = Path(__file__).resolve().parents[1]
 
 
 @dataclass

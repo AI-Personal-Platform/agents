@@ -4,7 +4,7 @@ import json
 from asyncio import gather
 
 import pytest
-from pydantic_ai import UsageLimitExceeded, UsageLimits
+from pydantic_ai import Agent, UsageLimitExceeded, UsageLimits
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
@@ -17,7 +17,7 @@ from pydantic_ai.messages import (
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from app.agents import assistant
-from app.agents.base import AgentDeps, BaseAgent
+from app.agents.base import AgentDeps
 from app.agents.tools.summarize import summary_budget
 
 SOURCE = "The project uses Python."
@@ -51,14 +51,12 @@ def fake_model() -> FakeModel:
 
 
 @pytest.fixture
-def agent(
-    test_agents: None, fake_model: FakeModel
-) -> BaseAgent[AgentDeps, assistant.AgentResponse]:
+def agent(test_agents: None, fake_model: FakeModel) -> Agent[AgentDeps, assistant.AgentResponse]:
     return assistant.get_assistant_agent()
 
 
 async def test_summary_returns_in_parent_run(
-    agent: BaseAgent[AgentDeps, assistant.AgentResponse],
+    agent: Agent[AgentDeps, assistant.AgentResponse],
     fake_model: FakeModel,
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)):
@@ -87,7 +85,7 @@ async def test_summary_returns_in_parent_run(
 
 
 async def test_parent_request_limit_counts_the_summarize_request(
-    agent: BaseAgent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
+    agent: Agent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)), pytest.raises(UsageLimitExceeded):
         await agent.run(
@@ -99,7 +97,7 @@ async def test_parent_request_limit_counts_the_summarize_request(
 
 
 async def test_concurrent_summaries_keep_their_own_session_headers(
-    agent: BaseAgent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
+    agent: Agent[AgentDeps, assistant.AgentResponse], fake_model: FakeModel
 ) -> None:
     with agent.override(model=FunctionModel(fake_model)):
         first, second = await gather(

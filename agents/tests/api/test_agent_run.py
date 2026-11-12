@@ -9,7 +9,7 @@ from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, Text
 from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls, FunctionModel
 from pydantic_ai.ui.vercel_ai.request_types import SubmitMessage
 
-from app.agents.base import agent as base_agent
+from app.agents import assistant
 from app.api.routes import agent as agent_routes
 from app.core.config import Settings
 from tests.helpers.agent_api import user_message
@@ -37,7 +37,7 @@ def test_run_sends_all_input_messages_to_the_model(
                         prompts.append(part.content)
         yield json.dumps({"message": "Hi again."})
 
-    monkeypatch.setattr(base_agent, "get_agent_model", lambda: FunctionModel(stream_function=model))
+    monkeypatch.setattr(assistant, "get_agent_model", lambda: FunctionModel(stream_function=model))
     run_input.messages = [user_message("Hello"), *run_input.messages]
 
     response = api_client.post(
@@ -83,7 +83,7 @@ def test_run_stops_at_the_request_limit(
         return ModelResponse(parts=[TextPart("A summary.")])
 
     monkeypatch.setattr(
-        base_agent,
+        assistant,
         "get_agent_model",
         lambda: FunctionModel(summary, stream_function=model),
     )

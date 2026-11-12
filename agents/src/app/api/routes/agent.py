@@ -4,19 +4,20 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ValidationError
+from pydantic_ai import Agent
 from pydantic_ai.ui.vercel_ai import VercelAIAdapter
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.agents import find_agent
-from app.agents.base import AgentDeps, BaseAgent
+from app.agents.base import AgentDeps
 from app.core.config import get_settings
 
 settings = get_settings()
 router = APIRouter()
 
 
-def get_agent(agent_id: str) -> BaseAgent[Any, Any]:
+def get_agent(agent_id: str) -> Agent[Any, Any]:
     agent = find_agent(agent_id)
     if agent is None:
         raise HTTPException(status_code=404, detail=f"Unknown agent: {agent_id}.")
@@ -31,7 +32,7 @@ def get_agent(agent_id: str) -> BaseAgent[Any, Any]:
     return agent
 
 
-AgentDep = Annotated[BaseAgent[Any, Any], Depends(get_agent)]
+AgentDep = Annotated[Agent[Any, Any], Depends(get_agent)]
 
 
 @router.post("/agents/{agent_id}")

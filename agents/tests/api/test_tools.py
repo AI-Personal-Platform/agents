@@ -9,7 +9,7 @@ from pydantic_ai.messages import ModelMessage
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.ui.vercel_ai.request_types import SubmitMessage
 
-from app.agents.base import agent as base_agent
+from app.agents import assistant
 from app.api.routes import agent as agent_routes
 from app.core.config import Settings
 from tests.helpers.agent_api import assert_agent_reply, parse_events
@@ -34,7 +34,7 @@ def test_run_offers_the_agent_tools(
         names = sorted(tool.name for tool in info.function_tools)
         yield json.dumps({"message": json.dumps(names)})
 
-    monkeypatch.setattr(base_agent, "get_agent_model", lambda: FunctionModel(stream_function=model))
+    monkeypatch.setattr(assistant, "get_agent_model", lambda: FunctionModel(stream_function=model))
 
     response = api_client.post(
         "/agents/assistant",

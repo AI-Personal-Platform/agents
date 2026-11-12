@@ -10,7 +10,7 @@ from pydantic_ai.messages import ModelMessage
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.ui.vercel_ai.request_types import SubmitMessage
 
-from app.agents.base import agent as base_agent
+from app.agents import assistant
 from app.api.routes import agent as agent_routes
 from app.core.config import Settings
 from tests.helpers.agent_api import user_message
@@ -32,7 +32,7 @@ def test_agent_requests_are_traced_without_prompt_content(
     async def model(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str]:
         yield json.dumps({"message": "Traced reply."})
 
-    monkeypatch.setattr(base_agent, "get_agent_model", lambda: FunctionModel(stream_function=model))
+    monkeypatch.setattr(assistant, "get_agent_model", lambda: FunctionModel(stream_function=model))
     marker = "private-telemetry-test-prompt"
     run_input.messages = [user_message(marker)]
 
